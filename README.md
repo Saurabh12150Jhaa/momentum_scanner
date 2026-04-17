@@ -1,5 +1,7 @@
 # Momentum Stock Scanner - Indian Markets (NSE)
 
+**[Launch Live App](https://momentumscanner-9fstalaqwzehtix3tba7cg.streamlit.app/)**
+
 A comprehensive momentum stock screening and analysis toolkit for Indian markets, combining CLI scanning with an interactive Streamlit dashboard.
 
 Built on proven momentum strategies: **Minervini SEPA**, **Weinstein Stage Analysis**, **O'Neil CANSLIM**, **Antonacci Dual Momentum**, and **Jegadeesh-Titman Momentum Factor**.
