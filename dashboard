@@ -1,0 +1,3 @@
+#!/bin/bash
+# Launch the Momentum Scanner Interactive Dashboard
+cd ~/momentum_scanner && uv run launch_dashboard.py "$@"

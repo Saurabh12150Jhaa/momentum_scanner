@@ -1,0 +1,12 @@
+# CLI Scanner dependencies
+yfinance>=0.2.31
+pandas>=2.0
+rich>=13.0
+requests>=2.31
+numpy>=1.24
+
+# Dashboard additional dependencies
+streamlit>=1.30
+plotly>=5.18
+beautifulsoup4>=4.12
+lxml>=5.0

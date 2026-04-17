@@ -1,0 +1,4 @@
+#!/bin/bash
+# Momentum Stock Scanner - Quick launcher
+# Usage: scan [momentum|breakout|pullback|all] [-f] [--export] [--local]
+cd ~/momentum_scanner && uv run scanner.py "$@"
