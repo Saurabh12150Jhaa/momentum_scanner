@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Momentum Stock Scanner - Indian Markets (NSE)</title>
+  <meta name="description" content="Open-source momentum stock screening toolkit for Indian markets. CLI scanner + Streamlit dashboard with Weinstein Stage Analysis, position sizing, and Screener.in integration.">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --orange: #d29922;
+      --red: #f85149;
+      --purple: #bc8cff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 5rem 1.5rem 4rem;
+      background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    .hero h1 .accent { color: var(--green); }
+    .hero .tagline {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 2rem;
+    }
+    .hero-badges {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .badge.green  { color: var(--green); border-color: #238636; }
+    .badge.blue   { color: var(--accent); border-color: #1f6feb; }
+    .badge.orange { color: var(--orange); border-color: #9e6a03; }
+    .badge.purple { color: var(--purple); border-color: #8957e5; }
+    .cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #2ea043; text-decoration: none; }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); text-decoration: none; }
+
+    /* Sections */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    section { padding: 4rem 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .section-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+
+    /* Feature grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color 0.15s ease;
+    }
+    .feature-card:hover { border-color: var(--text-muted); }
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .feature-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
+    }
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Funnel */
+    .funnel {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .funnel-step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .funnel-step:first-child { border-radius: 12px 12px 0 0; }
+    .funnel-step:last-child { border-radius: 0 0 12px 12px; }
+    .funnel-step + .funnel-step { border-top: none; }
+    .funnel-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .funnel-step:nth-child(1) .funnel-num { background: #1f6feb33; color: var(--accent); }
+    .funnel-step:nth-child(2) .funnel-num { background: #8957e533; color: var(--purple); }
+    .funnel-step:nth-child(3) .funnel-num { background: #d2992233; color: var(--orange); }
+    .funnel-step:nth-child(4) .funnel-num { background: #3fb95033; color: var(--green); }
+    .funnel-step:nth-child(5) .funnel-num { background: #f8514933; color: var(--red); }
+    .funnel-title { font-weight: 600; }
+    .funnel-desc { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* Code block */
+    .code-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      max-width: 700px;
+    }
+    .code-block .comment { color: var(--text-muted); }
+    .code-block .cmd { color: var(--green); }
+    .code-block .flag { color: var(--orange); }
+    .code-block .prompt { color: var(--purple); user-select: none; }
+
+    /* Data sources table */
+    .sources-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .sources-table th,
+    .sources-table td {
+      text-align: left;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sources-table th {
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .sources-table tr:last-child td { border-bottom: none; }
+
+    /* Regime table */
+    .regime-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 700px;
+    }
+    .regime-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .regime-card .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .regime-card .desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .regime-card .alloc {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--text); }
+
+    /* Quick start two-col */
+    .quickstart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .quickstart-grid .code-block { max-width: none; }
+    .qs-label {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .hero h1 { font-size: 2rem; }
+      .quickstart-grid { grid-template-columns: 1fr; }
+      .regime-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>Momentum Stock <span class="accent">Scanner</span></h1>
+    <p class="tagline">
+      Open-source CLI scanner + Streamlit dashboard for Indian markets (NSE). 
+      Minervini SEPA, Weinstein Stages, O'Neil CANSLIM &mdash; all in one toolkit.
+    </p>
+    <div class="hero-badges">
+      <span class="badge green">Weinstein Stage Analysis</span>
+      <span class="badge blue">Chartink + yfinance</span>
+      <span class="badge orange">Screener.in Integration</span>
+      <span class="badge purple">Position Sizing</span>
+    </div>
+    <div class="cta-group">
+      <a href="https://github.com/Saurabh12150Jhaa/momentum_scanner" class="btn btn-primary">
+        View on GitHub
+      </a>
+      <a href="#quickstart" class="btn btn-secondary">
+        Quick Start
+      </a>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">Features</h2>
+      <p class="section-subtitle">Everything you need for systematic momentum trading in Indian equities.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F50D;</div>
+          <h3>Multi-Strategy Scanner</h3>
+          <p>3 scan types &mdash; Momentum Universe, Breakout Candidates, Pullback-to-EMA &mdash; powered by Chartink API with yfinance fallback.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4CA;</div>
+          <h3>Interactive Dashboard</h3>
+          <p>Candlestick charts with EMA 50/150/200 overlays, RSI, volume analysis. Powered by Streamlit and Plotly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F3AF;</div>
+          <h3>Weinstein Stage Analysis</h3>
+          <p>Automatic Stage 1-4 classification. Visual stage labels and buy/sell signal detection on every chart.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4B0;</div>
+          <h3>Position Sizing</h3>
+          <p>Risk-based sizing (2% rule), multiple stop loss methods (ATR, fixed %, DMA), R:R targets, max-position warnings.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4C8;</div>
+          <h3>Shareholding Patterns</h3>
+          <p>Full SEBI-mandated breakdown from Screener.in &mdash; Promoter, FII, DII, Government, Public with quarterly trends.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F6A6;</div>
+          <h3>Market Regime Detection</h3>
+          <p>Nifty 50 vs 200-DMA + India VIX analysis. Auto-classifies BULL / CAUTION / BEAR with allocation guidance.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4DD;</div>
+          <h3>Fundamentals</h3>
+          <p>PE, ROE, D/E, PEG, OPM, NPM, quarterly results. Filters stocks by ROE &gt; 12%, D/E &lt; 1.5, earnings growth &gt; 15%.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#x1F4BC;</div>
+          <h3>Watchlist &amp; Portfolio</h3>
+          <p>Persistent watchlist and portfolio tracker with real-time P&amp;L, unrealized gains, and position count management.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">5-Layer Filtering Funnel</h2>
+      <p class="section-subtitle">From ~5000 NSE stocks down to a handful of actionable setups.</p>
+      <div class="funnel">
+        <div class="funnel-step">
+          <div class="funnel-num">1</div>
+          <div>
+            <div class="funnel-title">Universe Filter</div>
+            <div class="funnel-desc">Market cap &gt; 500 Cr, Price &gt; Rs.50, Avg volume &gt; 50K</div>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-num">2</div>
+          <div>
+            <div class="funnel-title">Momentum Filter</div>
+            <div class="funnel-desc">6-month return &gt; 20%, RSI &gt; 55, within 25% of 52-week high</div>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-num">3</div>
+          <div>
+            <div class="funnel-title">Technical Filter</div>
+            <div class="funnel-desc">Weinstein Stage 2 (advancing), EMA stack 50 &gt; 150 &gt; 200, rising 200-DMA</div>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-num">4</div>
+          <div>
+            <div class="funnel-title">Fundamental Filter</div>
+            <div class="funnel-desc">ROE &gt; 12%, D/E &lt; 1.5, revenue growth &gt; 10%, earnings growth &gt; 15%</div>
+          </div>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-num">5</div>
+          <div>
+            <div class="funnel-title">Entry Trigger</div>
+            <div class="funnel-desc">Breakout above resistance, pullback to 50-DMA, gap-up hold, volume surge, EMA crossover</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Market Regime -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">Market Regime Detection</h2>
+      <p class="section-subtitle">Automatically adjusts allocation based on Nifty 50 trend and India VIX.</p>
+      <div class="regime-grid">
+        <div class="regime-card">
+          <div class="label" style="color: var(--green);">BULL</div>
+          <div class="desc">Nifty &gt; 200-DMA<br>VIX &lt; 20</div>
+          <div class="alloc" style="color: var(--green);">80-100%</div>
+        </div>
+        <div class="regime-card">
+          <div class="label" style="color: var(--orange);">CAUTION</div>
+          <div class="desc">Mixed signals</div>
+          <div class="alloc" style="color: var(--orange);">40-60%</div>
+        </div>
+        <div class="regime-card">
+          <div class="label" style="color: var(--red);">BEAR</div>
+          <div class="desc">Nifty &lt; 200-DMA<br>or VIX &gt; 25</div>
+          <div class="alloc" style="color: var(--red);">0-20%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart">
+    <div class="container">
+      <h2 class="section-title">Quick Start</h2>
+      <p class="section-subtitle">Requires Python 3.9+ and <a href="https://docs.astral.sh/uv/">uv</a>. All dependencies install automatically.</p>
+      <div class="quickstart-grid">
+        <div>
+          <div class="qs-label">CLI Scanner</div>
+          <div class="code-block">
+<span class="comment"># Install uv (if you don't have it)</span>
+<span class="prompt">$ </span><span class="cmd">curl -LsSf https://astral.sh/uv/install.sh | sh</span>
+
+<span class="comment"># Clone the repo</span>
+<span class="prompt">$ </span><span class="cmd">git clone</span> https://github.com/Saurabh12150Jhaa/momentum_scanner.git
+<span class="prompt">$ </span><span class="cmd">cd</span> momentum_scanner
+
+<span class="comment"># Run momentum scan</span>
+<span class="prompt">$ </span><span class="cmd">uv run</span> scanner.py <span class="flag">momentum</span>
+
+<span class="comment"># Full scan with fundamentals + CSV export</span>
+<span class="prompt">$ </span><span class="cmd">uv run</span> scanner.py <span class="flag">all -f --export</span>
+          </div>
+        </div>
+        <div>
+          <div class="qs-label">Web Dashboard</div>
+          <div class="code-block">
+<span class="comment"># Launch the Streamlit dashboard</span>
+<span class="prompt">$ </span><span class="cmd">uv run</span> launch_dashboard.py
+
+<span class="comment"># Dashboard opens at http://localhost:8502</span>
+<span class="comment"># Features:</span>
+<span class="comment">#   - Candlestick charts + EMAs + RSI</span>
+<span class="comment">#   - Weinstein stage detection</span>
+<span class="comment">#   - Shareholding patterns</span>
+<span class="comment">#   - Position sizing calculator</span>
+<span class="comment">#   - Watchlist &amp; Portfolio tracker</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data Sources -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">Data Sources</h2>
+      <p class="section-subtitle">Multiple data providers for reliability and coverage.</p>
+      <table class="sources-table">
+        <thead>
+          <tr><th>Source</th><th>Usage</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://chartink.com">Chartink</a></td>
+            <td>Primary stock screener API &mdash; momentum, breakout, pullback scans</td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/ranaroussi/yfinance">yfinance</a></td>
+            <td>Price data, fundamentals, fallback scanning for all NSE tickers</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.screener.in">Screener.in</a></td>
+            <td>SEBI-mandated shareholding patterns, quarterly financial results</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.nseindia.com">NSE India</a></td>
+            <td>Nifty 50 index, India VIX for market regime detection</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;">
+        <strong>Momentum Stock Scanner</strong> &middot; MIT License
+      </p>
+      <p>
+        For educational and research purposes only. Not financial advice.
+      </p>
+      <p style="margin-top: 1rem;">
+        <a href="https://github.com/Saurabh12150Jhaa/momentum_scanner">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
