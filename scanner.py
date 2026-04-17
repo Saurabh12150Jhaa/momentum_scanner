@@ -50,7 +50,7 @@ from rich.text import Text
 # CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════
 
-BASE_DIR = Path.home() / "momentum_scanner"
+BASE_DIR = Path(__file__).resolve().parent
 CACHE_DIR = BASE_DIR / ".cache"
 RESULTS_DIR = BASE_DIR / "results"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)

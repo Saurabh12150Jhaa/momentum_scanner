@@ -31,7 +31,7 @@ from plotly.subplots import make_subplots
 # CONFIG
 # ═══════════════════════════════════════════════════════════════════
 
-BASE_DIR = Path.home() / "momentum_scanner"
+BASE_DIR = Path(__file__).resolve().parent
 CACHE_DIR = BASE_DIR / ".cache"
 RESULTS_DIR = BASE_DIR / "results"
 WATCHLIST_FILE = CACHE_DIR / "watchlist.json"
